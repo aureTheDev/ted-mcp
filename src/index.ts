@@ -26,27 +26,29 @@ const server = new McpServer({ name: "ted-europa", version: "1.0.0" });
 // search_notices
 // ---------------------------------------------------------------------------
 
-const DEFAULT_FIELDS = ["ND", "PD", "TI", "CY", "TY", "PC", "CA", "DD", "RC", "OJ"];
+const DEFAULT_FIELDS = ["ND", "PD", "TI", "CY", "TY", "PC", "RC", "organisation-name-buyer"];
 
 server.tool(
   "search_notices",
   "Search published TED EU procurement notices. No authentication required. " +
-    "Uses TED expert query language: FIELD=[VALUE] with AND/OR operators. " +
-    "Key fields: ND (notice number), PD (publication date YYYYMMDD), CY (country ISO code), " +
-    "PC (CPV code), CA (contracting authority name), TY (notice type 1-7), RC (NUTS region). " +
+    "Uses TED expert query language: FIELD=VALUE with AND/OR operators. " +
+    "Key fields: ND (notice number), PD (publication date YYYYMMDD), CY (country ISO 3-letter code), " +
+    "PC (CPV code), TY (notice type 1-7), RC (NUTS region). " +
     "Date range syntax: PD=[20240101..20240131]. " +
-    "Examples: 'CY=[FR] AND PC=[45000000]', 'ND=[123456-2024]', 'TY=[3] AND CY=[DE]'.",
+    "Country codes use ISO 3166-1 alpha-3: FRA=France, DEU=Germany, BEL=Belgium, ESP=Spain, ITA=Italy. " +
+    "Examples: 'CY=FRA AND TY=3', 'CY=FRA AND PC=45000000', 'ND=123456-2024'. " +
+    "Use scope=1 (archived) or scope=2 (all) — scope=0 (active) returns only currently open tenders.",
   {
     query: z.string().describe(
-      "TED expert query string. E.g. 'CY=[FR] AND PC=[45000000]' or 'ND=[123456-2024]'"
+      "TED expert query. E.g. 'CY=FRA AND TY=3' or 'CY=FRA AND PC=45000000' or 'ND=123456-2024'"
     ),
     fields: z.array(z.string()).optional().describe(
-      "Fields to return. Default: ND, PD, TI, CY, TY, PC, CA, DD, RC, OJ"
+      "Fields to return. Default: ND, PD, TI, CY, TY, PC, RC, organisation-name-buyer"
     ),
     page: z.number().int().min(1).default(1).describe("Page number (starts at 1)"),
     limit: z.number().int().min(1).max(100).default(10).describe("Results per page (1–100)"),
-    scope: z.union([z.literal(0), z.literal(1), z.literal(2)]).default(0).describe(
-      "0=ACTIVE notices, 1=ARCHIVED, 2=ALL"
+    scope: z.union([z.literal(0), z.literal(1), z.literal(2)]).default(1).describe(
+      "0=ACTIVE (open tenders only), 1=ARCHIVED (default), 2=ALL"
     ),
     onlyLatestVersions: z.boolean().default(true).describe(
       "Return only the latest version of each notice"
@@ -75,8 +77,11 @@ server.tool(
   },
   async ({ notice_number }) => {
     const allFields = [
-      "ND", "PD", "TI", "CY", "TY", "PC", "CA", "DD", "RC", "OJ",
-      "AC", "RN", "MA", "PR", "RP", "TD", "NC", "CR", "AA",
+      "ND", "PD", "TI", "CY", "TY", "PC", "RC",
+      "organisation-name-buyer", "organisation-country-buyer",
+      "description-glo", "winner-name", "total-value",
+      "deadline-receipt-tender-date-lot", "main-classification-proc",
+      "notice-subtype", "buyer-profile",
     ];
     const data = (await tedFetch("/v3/notices/search", {
       method: "POST",
