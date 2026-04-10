@@ -34,9 +34,10 @@ server.tool(
     "Uses TED expert query language: FIELD=VALUE with AND/OR operators. " +
     "Key fields: ND (notice number), PD (publication date YYYYMMDD), CY (country ISO 3-letter code), " +
     "PC (CPV code), TY (notice type 1-7), RC (NUTS region). " +
-    "Date range syntax: PD=[20240101..20240131]. " +
+    "Date syntax: PD>=YYYYMMDD, PD<=YYYYMMDD, or combine both for a range. " +
     "Country codes use ISO 3166-1 alpha-3: FRA=France, DEU=Germany, BEL=Belgium, ESP=Spain, ITA=Italy. " +
-    "Examples: 'CY=FRA AND TY=3', 'CY=FRA AND PC=45000000', 'ND=123456-2024'. " +
+    "Examples: 'CY=FRA AND TY=3', 'CY=FRA AND PC=45000000', 'PD>=20240101 AND PD<=20240131'. " +
+    "Default sort is not reverse-chronological — use PD>=YYYYMMDD to target recent notices. " +
     "Use scope=1 (archived) or scope=2 (all) — scope=0 (active) returns only currently open tenders.",
   {
     query: z.string().describe(
@@ -87,7 +88,7 @@ server.tool(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        query: `ND=[${notice_number}]`,
+        query: `ND=${notice_number}`,
         fields: allFields,
         page: 1,
         limit: 1,
@@ -195,21 +196,6 @@ server.tool(
         }, null, 2),
       }],
     };
-  }
-);
-
-// ---------------------------------------------------------------------------
-// get_sdk_versions
-// ---------------------------------------------------------------------------
-
-server.tool(
-  "get_sdk_versions",
-  "Get the eForms SDK version range currently supported by the TED Central " +
-    "Validation Service (CVS). No authentication required.",
-  {},
-  async () => {
-    const data = await tedFetch("/v3/config/sdk-versions");
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   }
 );
 

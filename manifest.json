@@ -32,10 +32,6 @@
     {
       "name": "get_notice_docs_url",
       "description": "Extract the procurement documents URL (DCE/tender dossier) from a TED notice"
-    },
-    {
-      "name": "get_sdk_versions",
-      "description": "Get the eForms SDK version range supported by the TED Central Validation Service"
     }
   ]
 }
