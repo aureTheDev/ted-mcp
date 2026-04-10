@@ -122,11 +122,14 @@ server.tool(
   },
   async ({ notice_number }: { notice_number: string }) => {
     const url = `https://ted.europa.eu/udl?uri=TED:NOTICE:${notice_number}:TEXT:EN:XML`;
-    const resp = await fetch(url);
+    const resp = await fetch(url, { headers: { Accept: "application/xml, text/xml" } });
     if (!resp.ok) {
       throw new Error(`TED ${resp.status}: notice '${notice_number}' XML not found`);
     }
     const xml = await resp.text();
+    if (xml.trimStart().startsWith("<html") || xml.trimStart().startsWith("<!DOCTYPE")) {
+      throw new Error(`TED returned HTML instead of XML for notice '${notice_number}' — the notice may not exist or may use a format not supported by this endpoint`);
+    }
     return { content: [{ type: "text", text: xml }] };
   }
 );
@@ -144,7 +147,7 @@ server.tool(
   },
   async ({ notice_number }: { notice_number: string }) => {
     const url = `https://ted.europa.eu/udl?uri=TED:NOTICE:${notice_number}:TEXT:EN:XML`;
-    const resp = await fetch(url);
+    const resp = await fetch(url, { headers: { Accept: "application/xml, text/xml" } });
     if (!resp.ok) {
       throw new Error(`TED ${resp.status}: notice '${notice_number}' not found`);
     }
