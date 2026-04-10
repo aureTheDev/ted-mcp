@@ -1,0 +1,41 @@
+{
+  "manifest_version": "0.4",
+  "name": "ted-mcp",
+  "display_name": "TED Europa MCP",
+  "version": "1.0.0",
+  "icon": "icon.png",
+  "description": "Search and retrieve EU public procurement notices from TED (Tenders Electronic Daily). No API key required.",
+  "author": {
+    "name": "aureTheDev"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"]
+    }
+  },
+  "tools": [
+    {
+      "name": "search_notices",
+      "description": "Search published EU procurement notices using TED expert query language (filters by country, CPV code, notice type, date range, etc.)"
+    },
+    {
+      "name": "get_notice",
+      "description": "Retrieve full details of a specific TED notice by its document number (e.g. '123456-2024')"
+    },
+    {
+      "name": "get_notice_xml",
+      "description": "Download the complete XML content of a TED notice (full description, technical specs, award criteria)"
+    },
+    {
+      "name": "get_notice_docs_url",
+      "description": "Extract the procurement documents URL (DCE/tender dossier) from a TED notice"
+    },
+    {
+      "name": "get_sdk_versions",
+      "description": "Get the eForms SDK version range supported by the TED Central Validation Service"
+    }
+  ]
+}
